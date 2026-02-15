@@ -3,5 +3,6 @@
 @tailwind utilities;
 
 body {
-  @apply bg-white text-slate-900;
+  margin: 0;
+  padding: 0;
 }
