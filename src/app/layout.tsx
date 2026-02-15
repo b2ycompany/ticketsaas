@@ -6,17 +6,13 @@ import { AuthProvider } from "@/context/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TicketMaster SaaS | B2Y Company",
-  description: "Advanced Operational Ticketing Platform",
+  title: "TicketMaster SaaS",
+  description: "Advanced Operational Platform",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt">
+    <html lang="pt" className="scroll-smooth">
       <body className={inter.className}>
         <AuthProvider>
           {children}
