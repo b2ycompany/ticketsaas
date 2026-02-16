@@ -1,60 +1,127 @@
 "use client";
-import { useState } from "react";
-import { ArrowLeft, Save, Clock, ShieldAlert } from "lucide-react";
-import Link from "next/link";
 
-export default function SLASettings() {
-  const [sla, setSla] = useState({ critical: 2, high: 4, medium: 12, low: 24 });
+import { useState, useEffect } from "react";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, onSnapshot, query, serverTimestamp } from "firebase/firestore";
+import { Vendor } from "@/types/vendor";
+import { Building2, Plus, Cpu, Globe } from "lucide-react";
+
+export default function SettingsPage() {
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [vendorName, setVendorName] = useState("");
+  const [vendorSla, setVendorSla] = useState("4");
+
+  useEffect(() => {
+    const q = query(collection(db, "vendors"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data() 
+      })) as Vendor[];
+      setVendors(data);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleAddVendor = async () => {
+    if (!vendorName.trim()) return;
+    try {
+      await addDoc(collection(db, "vendors"), {
+        name: vendorName,
+        defaultSla: vendorSla,
+        active: true,
+        createdAt: serverTimestamp()
+      });
+      setVendorName("");
+    } catch (error) {
+      console.error("Erro ao cadastrar fornecedor:", error);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-12">
-      <div className="max-w-3xl mx-auto">
-        <Link href="/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-blue-600 mb-8 font-bold transition">
-          <ArrowLeft size={20} /> Voltar ao Painel
-        </Link>
+    <div className="min-h-screen bg-[#020617] p-16 text-white overflow-y-auto">
+      <header className="mb-20">
+        <h2 className="text-7xl font-black italic uppercase tracking-tighter mb-4">Master Setup</h2>
+        <div className="flex items-center gap-4">
+           <span className="h-px w-20 bg-blue-600" />
+           <p className="text-slate-500 font-black uppercase text-[10px] tracking-[0.5em]">Governança de Parceiros e Fluxo ITSM</p>
+        </div>
+      </header>
 
-        <div className="bg-white rounded-[40px] p-10 shadow-xl border border-slate-100">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="bg-blue-600 p-3 rounded-2xl">
-              <ShieldAlert className="text-white" size={24} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <section className="bg-white/5 border border-white/5 p-12 rounded-[60px] shadow-2xl backdrop-blur-md">
+          <div className="flex items-center gap-6 mb-12">
+            <div className="p-4 bg-blue-600/10 rounded-2xl border border-blue-600/20 text-blue-600">
+              <Building2 size={32} />
             </div>
-            <div>
-              <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Políticas de SLA</h2>
-              <p className="text-slate-500 text-sm font-medium">Defina os tempos de resposta por prioridade.</p>
+            <h3 className="text-3xl font-black italic uppercase tracking-tight text-white">Gestão de Parceiros</h3>
+          </div>
+
+          <div className="space-y-6 mb-14">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-500 uppercase ml-4">Nome da Organização Externa</label>
+              <input 
+                value={vendorName}
+                onChange={(e) => setVendorName(e.target.value)}
+                placeholder="Ex: Tailwind Solutions" 
+                className="w-full p-8 bg-slate-950 border border-white/10 rounded-[30px] outline-none focus:border-blue-600 font-bold text-sm transition-all" 
+              />
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-1 space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase ml-4">SLA de Contrato (MTTR)</label>
+                <select 
+                  value={vendorSla}
+                  onChange={(e) => setVendorSla(e.target.value)}
+                  className="w-full p-8 bg-slate-950 border border-white/10 rounded-[30px] outline-none font-bold text-sm appearance-none cursor-pointer"
+                >
+                  <option value="4">Prioridade 1: 04 Horas</option>
+                  <option value="12">Prioridade 2: 12 Horas</option>
+                  <option value="24">Prioridade 3: 24 Horas</option>
+                  <option value="48">Prioridade 4: 48 Horas</option>
+                </select>
+              </div>
+              <button 
+                onClick={handleAddVendor} 
+                className="mt-6 bg-blue-600 px-10 rounded-[30px] font-black uppercase text-[10px] tracking-widest hover:bg-white hover:text-blue-600 transition-all shadow-xl shadow-blue-600/20 flex items-center justify-center"
+              >
+                <Plus size={24} />
+              </button>
             </div>
           </div>
 
-          <div className="space-y-6">
-            {Object.keys(sla).map((level) => (
-              <div key={level} className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-transparent hover:border-blue-200 transition-all">
-                <div>
-                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{level}</p>
-                  <p className="text-slate-700 font-bold">Tempo máximo de resolução</p>
+          <div className="space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
+            {vendors.map(v => (
+              <div key={v.id} className="p-8 bg-slate-950/50 border border-white/5 rounded-[35px] flex justify-between items-center group hover:border-blue-600/50 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="h-2 w-2 bg-blue-600 rounded-full animate-pulse" />
+                  <span className="font-black italic text-lg text-white group-hover:text-blue-500 transition-colors">{v.name}</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <input 
-                    type="number" 
-                    value={sla[level as keyof typeof sla]}
-                    onChange={(e) => setSla({...sla, [level]: e.target.value})}
-                    className="w-20 p-3 bg-white rounded-xl border-2 border-slate-200 text-center font-black outline-none focus:border-blue-600"
-                  />
-                  <span className="font-bold text-slate-500 uppercase text-xs">Horas</span>
+                <div className="text-right">
+                  <p className="text-[9px] font-black text-slate-600 uppercase">Acordo de SLA</p>
+                  <p className="text-xs font-black text-blue-500 uppercase tracking-widest">{v.defaultSla}H MTTR</p>
                 </div>
               </div>
             ))}
           </div>
+        </section>
 
-          <button className="w-full mt-10 bg-slate-900 text-white p-6 rounded-3xl font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 hover:bg-blue-600 transition-all shadow-xl shadow-slate-200">
-            <Save size={18} /> Aplicar Novas Regras
-          </button>
-        </div>
-
-        <div className="mt-8 p-6 bg-blue-50 rounded-3xl border border-blue-100 flex gap-4 items-start">
-          <Clock className="text-blue-600 shrink-0" size={20} />
-          <p className="text-sm text-blue-800 leading-relaxed font-medium">
-            <strong>Dica Pro:</strong> Alterar estas regras afetará apenas os novos tickets criados via Zabbix ou manualmente. Tickets em curso manterão o prazo original.
-          </p>
-        </div>
+        <section className="bg-blue-600/5 border border-blue-600/10 p-12 rounded-[60px] relative overflow-hidden flex flex-col justify-center min-h-[500px]">
+          <div className="absolute top-0 right-0 opacity-10 scale-150 rotate-12"><Cpu size={400} /></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-6 mb-8 text-blue-500">
+              <Globe size={48} />
+              <h3 className="text-5xl font-black italic uppercase tracking-tighter">Workflow Engine</h3>
+            </div>
+            <p className="text-slate-400 font-medium italic text-xl mb-12 leading-relaxed max-w-md">
+              O administrador tem controle total sobre a jornada do incidente. Defina regras automáticas de transição e escale tickets para parceiros externos em tempo real.
+            </p>
+            <div className="p-10 bg-slate-950/80 rounded-[40px] border border-blue-600/20 flex items-center justify-center italic text-blue-500 font-black uppercase text-[11px] tracking-[0.4em] border-dashed border-2 shadow-2xl">
+              Sincronização de Fluxo V2.8 Ativa
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
