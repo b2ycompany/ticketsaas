@@ -1,14 +1,25 @@
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp } from "firebase/firestore";
 
 export interface Ticket {
   id?: string;
-  tenantId: string;
   title: string;
   description: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
   status: 'open' | 'in_progress' | 'resolved' | 'closed';
-  source: 'manual' | 'zabbix' | 'jira' | 'servicenow';
-  createdAt: Timestamp;
-  slaDeadline: Timestamp;
+  priority: 'low' | 'medium' | 'high' | 'critical';
   customerName: string;
+  tenantId: string;
+  source: string; // Ex: Zabbix, ServiceNow, Manual
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
+  slaDeadline: Timestamp | Date;
+  assignedTo?: string;
+  comments?: TicketComment[];
+}
+
+export interface TicketComment {
+  id: string;
+  userId: string;
+  userName: string;
+  text: string;
+  createdAt: Timestamp | Date;
 }
