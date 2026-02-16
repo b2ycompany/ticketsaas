@@ -23,14 +23,19 @@ import {
   Clock,
   TrendingUp,
   Layers,
-  ShieldAlert
+  ShieldAlert,
+  LayoutGrid,
+  Settings,
+  ChevronRight,
+  Activity
 } from "lucide-react";
 import TicketDetailSidebar from "@/components/TicketDetailSidebar";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 /**
  * B2Y MASTER - NEXT-GEN ITSM COMMAND CENTER
- * Versão: 1.2.5 - Governança Enterprise Blindada
+ * Versão: 1.3.0 - High Density & Integrated Navigation
  */
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
@@ -101,9 +106,9 @@ export default function DashboardPage() {
 
   if (authLoading) {
     return (
-      <div className="h-screen bg-[#020617] flex flex-col items-center justify-center">
-        <div className="h-20 w-20 border-t-4 border-blue-600 rounded-full animate-spin shadow-2xl mb-8" />
-        <h2 className="text-white font-black italic uppercase tracking-[0.6em] text-[10px] animate-pulse">Sincronizando Terminal</h2>
+      <div className="h-screen bg-[#020617] flex flex-col items-center justify-center font-sans">
+        <div className="h-16 w-16 border-t-2 border-blue-600 rounded-full animate-spin mb-4" />
+        <p className="text-white text-[10px] font-black uppercase tracking-[0.4em]">Booting Dashboard...</p>
       </div>
     );
   }
@@ -113,82 +118,107 @@ export default function DashboardPage() {
   return (
     <div className="flex h-screen bg-[#020617] text-white font-sans overflow-hidden">
       
-      {/* SIDEBAR DE COMANDO */}
-      <aside className="w-84 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 p-10 flex flex-col z-[100] shadow-2xl">
-        <div className="flex items-center gap-4 mb-20">
-          <div className="bg-blue-600 p-4 rounded-[22px] shadow-[0_0_40px_rgba(37,99,235,0.4)]">
-            <Zap className="text-white fill-current" size={24} />
+      {/* SIDEBAR DE COMANDO ATUALIZADA */}
+      <aside className="w-72 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 p-6 flex flex-col z-[100] shadow-2xl">
+        <div className="flex items-center gap-3 mb-12 px-2">
+          <div className="bg-blue-600 p-2.5 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)]">
+            <Zap className="text-white fill-current" size={18} />
           </div>
           <div className="flex flex-col uppercase italic font-black">
-            <span className="text-2xl tracking-tighter">TicketMaster</span>
+            <span className="text-lg tracking-tighter">TicketMaster</span>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-4">
+        <nav className="flex-1 space-y-2">
+          <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest px-4 mb-4">Operacional</p>
           <button 
             onClick={() => setActiveTab("tickets")}
-            className={`flex items-center gap-6 w-full p-6 rounded-[30px] font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === "tickets" ? "bg-blue-600 shadow-2xl text-white" : "text-slate-500 hover:text-white"}`}
+            className={`flex items-center gap-4 w-full p-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === "tickets" ? "bg-blue-600 shadow-xl text-white" : "text-slate-500 hover:text-white hover:bg-white/5"}`}
           >
-            <TicketIcon size={22} /> <span>Incidentes</span>
+            <TicketIcon size={18} /> <span>Incidentes</span>
           </button>
+          
+          {/* NOVA CONEXÃO: BOARD KANBAN */}
+          <Link href="/dashboard/kanban" className="flex items-center gap-4 w-full p-4 text-slate-500 hover:text-white hover:bg-white/5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
+            <LayoutGrid size={18} /> <span>Board Kanban</span>
+          </Link>
+
           <button 
             onClick={() => setActiveTab("sla")}
-            className={`flex items-center gap-6 w-full p-6 rounded-[30px] font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === "sla" ? "bg-blue-600 shadow-2xl text-white" : "text-slate-500 hover:text-white"}`}
+            className={`flex items-center gap-4 w-full p-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === "sla" ? "bg-blue-600 shadow-xl text-white" : "text-slate-500 hover:text-white hover:bg-white/5"}`}
           >
-            <BarChart3 size={22} /> <span>Analytics</span>
+            <BarChart3 size={18} /> <span>Analytics</span>
           </button>
+
+          <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest px-4 mt-8 mb-4">Administração</p>
           <button 
             onClick={() => setActiveTab("auditoria")}
-            className={`flex items-center gap-6 w-full p-6 rounded-[30px] font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === "auditoria" ? "bg-blue-600 shadow-2xl text-white" : "text-slate-500 hover:text-white"}`}
+            className={`flex items-center gap-4 w-full p-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === "auditoria" ? "bg-blue-600 shadow-xl text-white" : "text-slate-500 hover:text-white hover:bg-white/5"}`}
           >
-            <ShieldCheck size={22} /> <span>Auditoria</span>
+            <ShieldCheck size={18} /> <span>Auditoria</span>
           </button>
+          
+          {/* NOVA CONEXÃO: SETTINGS */}
+          <Link href="/dashboard/settings" className="flex items-center gap-4 w-full p-4 text-slate-500 hover:text-white hover:bg-white/5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
+            <Settings size={18} /> <span>Configurações</span>
+          </Link>
         </nav>
 
-        <button 
-          onClick={() => auth.signOut()}
-          className="mt-auto flex items-center gap-5 w-full p-5 text-red-500 hover:bg-red-500/10 rounded-[25px] transition-all font-black text-[10px] uppercase tracking-[0.3em]"
-        >
-          <LogOut size={20} /> <span>Logoff Seguro</span>
-        </button>
+        <div className="pt-6 border-t border-white/5">
+          <div className="flex items-center gap-3 px-2 mb-6">
+            <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-black">
+              {user.email?.substring(0, 2).toUpperCase()}
+            </div>
+            <p className="text-[9px] font-black text-slate-400 truncate uppercase">{user.email?.split('@')[0]}</p>
+          </div>
+          <button 
+            onClick={() => auth.signOut()}
+            className="flex items-center justify-center gap-3 w-full p-4 bg-red-500/10 text-red-500 rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
+          >
+            <LogOut size={16} /> <span>Sair do Sistema</span>
+          </button>
+        </div>
       </aside>
 
-      {/* ÁREA CENTRAL */}
-      <main className="flex-1 overflow-y-auto p-16 relative custom-scrollbar">
+      {/* ÁREA CENTRAL - DENSIDADE DE FONTES REDUZIDA */}
+      <main className="flex-1 overflow-y-auto p-12 relative custom-scrollbar">
         <AnimatePresence mode="wait">
           
           {activeTab === "tickets" && (
             <motion.div key="tickets-tab" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <header className="flex justify-between items-end mb-20">
-                <h2 className="text-9xl font-black tracking-tighter italic uppercase text-white leading-none">Console</h2>
-                <div className="flex gap-6">
-                  <div className="bg-white/5 border border-white/5 p-10 rounded-[50px] text-center min-w-[170px]">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 italic">Compliance</p>
-                    <p className="text-6xl font-black italic text-emerald-500">{kpis.rate}%</p>
+              <header className="flex justify-between items-end mb-12">
+                <div>
+                  <h2 className="text-6xl font-black tracking-tighter italic uppercase text-white leading-none">Terminal</h2>
+                  <p className="text-blue-500 text-[9px] font-black uppercase tracking-[0.4em] mt-3">Monitoring Live Stream</p>
+                </div>
+                <div className="flex gap-4">
+                  <div className="bg-white/5 border border-white/5 p-6 rounded-3xl text-center min-w-[140px]">
+                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 italic">SLA Compliance</p>
+                    <p className="text-4xl font-black italic text-emerald-500">{kpis.rate}%</p>
                   </div>
-                  <div className="bg-red-500/10 border border-red-500/20 p-10 rounded-[50px] text-center min-w-[170px]">
-                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-3 italic">Críticos</p>
-                    <p className="text-6xl font-black italic text-red-500">{kpis.crit}</p>
+                  <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-3xl text-center min-w-[140px]">
+                    <p className="text-[8px] font-black text-red-500 uppercase tracking-widest mb-1 italic">Incidentes Críticos</p>
+                    <p className="text-4xl font-black italic text-red-500">{kpis.crit}</p>
                   </div>
                 </div>
               </header>
 
-              <div className="flex flex-col xl:flex-row gap-6 mb-16">
-                <div className="relative flex-1">
-                  <Search className="absolute left-10 top-1/2 -translate-y-1/2 text-slate-600" size={28} />
+              <div className="flex flex-col lg:flex-row gap-4 mb-10">
+                <div className="relative flex-1 group">
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-blue-500 transition-colors" size={20} />
                   <input 
                     type="text" 
-                    placeholder="Pesquisar incidente..." 
-                    className="w-full p-10 pl-24 bg-white/5 border border-white/5 rounded-[45px] text-white outline-none focus:border-blue-500/50 transition-all font-black text-xl placeholder:text-slate-800" 
+                    placeholder="Localizar protocolo ou cliente..." 
+                    className="w-full p-6 pl-16 bg-white/5 border border-white/5 rounded-3xl text-white outline-none focus:border-blue-500/50 transition-all font-bold text-sm" 
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <div className="flex items-center gap-3 bg-white/5 p-3 rounded-[45px] border border-white/5">
-                  {['all', 'open', 'in_progress', 'waiting_customer', 'resolved'].map(s => (
+                <div className="flex items-center gap-2 bg-white/5 p-2 rounded-3xl border border-white/5">
+                  {['all', 'open', 'in_progress', 'resolved'].map(s => (
                     <button 
                       key={s} 
                       onClick={() => setFilterStatus(s)} 
-                      className={`px-8 py-5 rounded-[35px] text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === s ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white'}`}
+                      className={`px-6 py-3 rounded-2xl text-[8px] font-black uppercase tracking-widest transition-all ${filterStatus === s ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
                     >
                       {s.replace('_', ' ')}
                     </button>
@@ -196,27 +226,34 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 gap-4">
                 {loading ? (
-                  <div className="h-40 bg-white/5 animate-pulse rounded-[60px]" />
+                  <div className="h-32 bg-white/5 animate-pulse rounded-3xl" />
                 ) : filteredTickets.map((t) => (
                     <motion.div 
                       key={t.id} 
                       onClick={() => setSelectedTicket(t)}
-                      className="bg-white/5 border border-white/5 p-12 rounded-[65px] transition-all flex items-center justify-between group cursor-pointer shadow-xl"
+                      whileHover={{ scale: 1.01 }}
+                      className="bg-white/5 border border-white/5 p-8 rounded-[35px] transition-all flex items-center justify-between group cursor-pointer shadow-xl"
                     >
-                      <div className="flex items-center gap-14">
-                        <div className={`h-28 w-28 rounded-[38px] flex items-center justify-center ${t.priority === 'critical' ? 'bg-red-500 text-white animate-pulse' : 'bg-blue-600 text-white'}`}>
-                          <AlertCircle size={48} />
+                      <div className="flex items-center gap-8">
+                        <div className={`h-16 w-16 rounded-2xl flex items-center justify-center ${t.priority === 'critical' ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-blue-600 text-white'}`}>
+                          <AlertCircle size={24} />
                         </div>
                         <div>
-                          <h4 className="text-4xl font-black uppercase italic group-hover:text-blue-400 transition-colors tracking-tighter mb-4 leading-none">{t.title}</h4>
-                          <span className="text-[12px] font-black text-slate-500 uppercase tracking-[0.4em]">{t.customerName} | {t.source} Gateway</span>
+                          <h4 className="text-xl font-black uppercase italic group-hover:text-blue-400 transition-colors tracking-tight mb-2 leading-none">{t.title}</h4>
+                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t.customerName} | {t.source} Hub</span>
                         </div>
                       </div>
-                      <button className="bg-white text-slate-900 px-14 py-8 rounded-[32px] font-black text-xs uppercase tracking-[0.3em] hover:bg-blue-600 hover:text-white transition-all shadow-2xl">
-                        Gerenciar
-                      </button>
+                      <div className="flex items-center gap-8">
+                        <div className="text-right hidden sm:block">
+                           <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1 italic">Status</p>
+                           <p className={`text-sm font-black italic ${t.status === 'open' ? 'text-blue-500' : 'text-emerald-500'}`}>{t.status.toUpperCase()}</p>
+                        </div>
+                        <div className="bg-white text-slate-900 p-4 rounded-xl shadow-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
+                           <ChevronRight size={18} />
+                        </div>
+                      </div>
                     </motion.div>
                 ))}
               </div>
@@ -224,49 +261,45 @@ export default function DashboardPage() {
           )}
 
           {activeTab === "sla" && (
-            <motion.div key="sla-tab" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="space-y-16">
-              <h2 className="text-9xl font-black tracking-tighter italic uppercase text-white">Analytics</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                <div className="p-20 bg-white/5 rounded-[80px] border border-white/5">
-                  <TrendingUp className="text-blue-500 mb-12" size={70} />
-                  <h4 className="text-xl font-black uppercase tracking-[0.4em] text-slate-600">Compliance</h4>
-                  <p className="text-[120px] font-black italic mt-12 leading-none">{kpis.rate}%</p>
+            <motion.div key="sla-tab" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+              <h2 className="text-6xl font-black tracking-tighter italic uppercase text-white">Performance Analytics</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="p-12 bg-white/5 rounded-[50px] border border-white/5 relative overflow-hidden">
+                  <TrendingUp className="text-blue-500 mb-8" size={40} />
+                  <h4 className="text-sm font-black uppercase tracking-widest text-slate-500">Média Global</h4>
+                  <p className="text-7xl font-black italic mt-4">{kpis.rate}%</p>
                 </div>
-                <div className="p-20 bg-white/5 rounded-[80px] border border-white/5">
-                  <Clock className="text-emerald-500 mb-12" size={70} />
-                  <h4 className="text-xl font-black uppercase tracking-[0.4em] text-slate-600">Resolução</h4>
-                  <p className="text-[120px] font-black italic mt-12 leading-none">12<span className="text-4xl ml-4">m</span></p>
+                <div className="p-12 bg-white/5 rounded-[50px] border border-white/5">
+                  <Clock className="text-emerald-500 mb-8" size={40} />
+                  <h4 className="text-sm font-black uppercase tracking-widest text-slate-500">Tempo Resposta</h4>
+                  <p className="text-7xl font-black italic mt-4">12<span className="text-lg ml-2 uppercase">min</span></p>
                 </div>
-                <div className="p-20 bg-white/5 rounded-[80px] border border-white/5">
-                  <Layers className="text-purple-500 mb-12" size={70} />
-                  <h4 className="text-xl font-black uppercase tracking-[0.4em] text-slate-600">Load</h4>
-                  <p className="text-[120px] font-black italic mt-12 leading-none text-emerald-500 italic">LOW</p>
+                <div className="p-12 bg-white/5 rounded-[50px] border border-white/5">
+                  <Layers className="text-purple-500 mb-8" size={40} />
+                  <h4 className="text-sm font-black uppercase tracking-widest text-slate-500">Volumetria</h4>
+                  <p className="text-7xl font-black italic mt-4">LOW</p>
                 </div>
               </div>
             </motion.div>
           )}
 
           {activeTab === "auditoria" && (
-            <motion.div key="auditoria-tab" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-16">
+            <motion.div key="auditoria-tab" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-10">
               <header className="flex justify-between items-center">
-                <h2 className="text-9xl font-black tracking-tighter italic uppercase text-white leading-none">Auditoria</h2>
-                <div className="flex items-center gap-4 px-8 py-4 bg-red-500/10 rounded-[30px] border border-red-500/20 text-red-500 font-black text-xs uppercase tracking-widest italic">
-                   <ShieldAlert size={20} /> Ledger Ativo
+                <h2 className="text-6xl font-black tracking-tighter italic uppercase text-white">Auditoria</h2>
+                <div className="flex items-center gap-3 px-6 py-2 bg-red-500/10 rounded-2xl border border-red-500/20 text-red-500 font-black text-[9px] uppercase tracking-widest">
+                   <ShieldAlert size={14} /> Ledger Imutável
                 </div>
               </header>
-              <div className="bg-[#0a0f1e] p-20 rounded-[80px] border border-white/5 font-mono text-sm shadow-inner max-h-[65vh] overflow-y-auto custom-scrollbar">
-                <div className="flex items-center gap-4 text-blue-500 font-black mb-12 italic uppercase tracking-[0.6em] border-b border-white/5 pb-8">
-                   {/* // B2Y MASTER AUDIT LOG SYSTEM // */}
-                   B2Y Master System Protocol 1.0
+              <div className="bg-[#0a0f1e] p-10 rounded-[50px] border border-white/5 font-mono text-[11px] shadow-inner max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="flex items-center gap-3 text-blue-500 font-black mb-8 italic uppercase tracking-[0.4em]">
+                   {/* // B2Y AUDIT STREAM ACTIVE // */}
+                   B2Y Master System Protocol v1.3
                 </div>
                 {tickets.map((t, idx) => (
-                  <div key={`${t.id}-${idx}`} className="mb-8 flex gap-10 text-slate-600 border-b border-white/[0.03] pb-8">
+                  <div key={`${t.id}-${idx}`} className="mb-4 flex gap-6 text-slate-500 border-b border-white/[0.03] pb-4">
                     <span className="text-blue-900 font-black">[{new Date().toLocaleTimeString()}]</span>
-                    <p>
-                       <span className="text-slate-500 font-black uppercase mr-4 tracking-widest italic">TRANS:</span> 
-                       Protocolo <span className="text-slate-300 font-black">#{t.id}</span> 
-                       migrado para <span className="text-blue-500 font-black uppercase tracking-widest ml-4">{t.status}</span>.
-                    </p>
+                    <p>Protocolo <span className="text-slate-300 font-bold">#{t.id}</span> migrado para <span className="text-blue-500 font-black uppercase">{t.status}</span>.</p>
                   </div>
                 ))}
               </div>
