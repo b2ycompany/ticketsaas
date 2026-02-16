@@ -1,18 +1,22 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "./globals.css"; // ESTA LINHA É O QUE CARREGA O DESIGN
 import { AuthProvider } from "@/context/AuthContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TicketMaster SaaS",
+  title: "TicketMaster SaaS | B2Y Company",
   description: "Advanced Operational Platform",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="pt" className="scroll-smooth">
+    <html lang="pt">
       <body className={inter.className}>
         <AuthProvider>
           {children}
