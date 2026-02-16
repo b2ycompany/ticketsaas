@@ -1,19 +1,24 @@
 "use client";
+
 import { useState } from "react";
+import { auth, db } from "@/lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../../../lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { UserPlus, Building2, Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
+import { UserPlus, ArrowLeft, ShieldAlert, Key, Mail, User, ShieldCheck } from "lucide-react";
 
+/**
+ * REGISTRO DE OPERADOR - B2Y MASTER V2.0
+ * Path corrigido para @/lib/firebase e remoção de variáveis lixo.
+ */
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -23,85 +28,112 @@ export default function RegisterPage() {
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "tenants", user.uid), {
-        companyName: companyName,
-        adminEmail: email,
-        plan: "enterprise_trial",
-        createdAt: new Date(),
-        active: true,
-        setupComplete: false
+      
+      // B2Y Ledger: Criação do perfil administrativo no Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        name,
+        email,
+        role: "admin",
+        status: "active",
+        createdAt: serverTimestamp()
       });
 
-      alert("Instância provisionada com sucesso! Redirecionando para o Terminal...");
-      
-      // Pequeno delay para garantir persistência da sessão
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1500);
-
+      router.push("/dashboard");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Erro no provisionamento";
-      console.error("Registration Error:", errorMessage);
-      setError("Falha ao criar conta. Verifique se o e-mail já existe.");
+      console.error("Registration Critical Failure:", err);
+      setError("Falha no protocolo de registro. Verifique as políticas de segurança.");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 relative overflow-hidden p-6">
-      <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[150px]"></div>
-      <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[150px]"></div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[500px] z-10">
-        <div className="bg-white/[0.02] backdrop-blur-3xl border border-white/10 p-12 rounded-[50px] shadow-2xl">
-          <div className="text-center mb-10">
-            <div className="inline-flex p-4 bg-emerald-600 rounded-2xl mb-6 shadow-lg shadow-emerald-600/20">
-              <UserPlus className="text-white" size={32} />
-            </div>
-            <h2 className="text-3xl font-black text-white tracking-tighter italic uppercase text-white font-bold">Ticket<span className="text-blue-500">Master</span></h2>
-            <p className="text-slate-500 text-xs mt-3 font-bold uppercase tracking-widest leading-relaxed font-bold italic">Provisionamento de Operação</p>
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-8 selection:bg-blue-600/30 relative overflow-hidden">
+      
+      {/* BOTÃO VOLTAR (ABSOLUTE UI) */}
+      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="absolute top-12 left-12">
+        <Link href="/" className="flex items-center gap-4 text-slate-500 hover:text-white transition-all group">
+          <div className="p-3 bg-white/5 rounded-xl group-hover:bg-blue-600 transition-colors shadow-2xl">
+            <ArrowLeft size={18} />
           </div>
-
-          <form onSubmit={handleRegister} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4 italic">Empresa / Cliente</label>
-              <div className="relative">
-                <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                <input type="text" required placeholder="Ex: Lion Solution" className="w-full p-5 pl-14 bg-white/[0.04] border border-white/5 rounded-2xl text-white outline-none focus:border-blue-600 transition-all font-bold" onChange={(e) => setCompanyName(e.target.value)} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4 italic">E-mail Master</label>
-              <div className="relative">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                <input type="email" required placeholder="admin@lion.com.br" className="w-full p-5 pl-14 bg-white/[0.04] border border-white/5 rounded-2xl text-white outline-none focus:border-blue-600 transition-all font-bold" onChange={(e) => setEmail(e.target.value)} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4 italic">Chave de Acesso</label>
-              <div className="relative">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                <input type="password" required placeholder="Mínimo 6 caracteres" className="w-full p-5 pl-14 bg-white/[0.04] border border-white/5 rounded-2xl text-white outline-none focus:border-blue-600 transition-all font-bold" onChange={(e) => setPassword(e.target.value)} />
-              </div>
-            </div>
-
-            {error && <p className="text-red-400 text-[10px] font-black text-center uppercase tracking-widest">{error}</p>}
-
-            <button disabled={loading} className="group w-full bg-white text-slate-900 p-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-blue-600 hover:text-white transition-all shadow-xl">
-              {loading ? "Processando..." : "Criar Minha Plataforma"} 
-              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={16} />
-            </button>
-          </form>
-
-          <div className="mt-10 text-center border-t border-white/5 pt-8 font-bold italic uppercase">
-            <Link href="/login" className="text-slate-500 font-black text-[10px] hover:text-blue-500 transition uppercase tracking-[0.2em]">Já possui conta? <span className="text-white underline ml-2">Entrar</span></Link>
-          </div>
-        </div>
+          <span className="font-black text-[11px] uppercase tracking-[0.3em] italic">Cancelar Registro</span>
+        </Link>
       </motion.div>
+
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }} 
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-xl bg-white/[0.02] border border-white/5 p-16 rounded-[70px] shadow-3xl backdrop-blur-3xl relative"
+      >
+        <header className="text-center mb-16">
+          <div className="inline-flex bg-emerald-600 p-6 rounded-3xl shadow-[0_0_50px_rgba(16,185,129,0.3)] mb-10">
+            <UserPlus size={40} className="text-white" />
+          </div>
+          <h2 className="text-6xl font-black italic uppercase tracking-tighter text-white leading-none">New Operative</h2>
+          <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.6em] mt-5 italic">Credenciamento de Nível 3 B2Y</p>
+        </header>
+
+        <form onSubmit={handleRegister} className="space-y-8">
+          <div className="space-y-3">
+            <label className="text-[11px] font-black text-slate-500 uppercase ml-8 italic tracking-widest">Identificação Master</label>
+            <div className="relative group">
+              <User className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-blue-500 transition-colors" size={22} />
+              <input 
+                required value={name} onChange={(e) => setName(e.target.value)}
+                className="w-full p-8 pl-20 bg-slate-950 border border-white/10 rounded-[40px] outline-none focus:border-blue-600 font-bold transition-all text-sm placeholder:text-slate-900 shadow-inner" 
+                placeholder="Ex: Marcus Aurelius"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-[11px] font-black text-slate-500 uppercase ml-8 italic tracking-widest">E-mail de Serviço</label>
+            <div className="relative group">
+              <Mail className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-blue-500 transition-colors" size={22} />
+              <input 
+                type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-8 pl-20 bg-slate-950 border border-white/10 rounded-[40px] outline-none focus:border-blue-600 font-bold transition-all text-sm placeholder:text-slate-900 shadow-inner" 
+                placeholder="operador@servico.com"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-[11px] font-black text-slate-500 uppercase ml-8 italic tracking-widest">Chave Alpha-Numerica</label>
+            <div className="relative group">
+              <Key className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-blue-500 transition-colors" size={22} />
+              <input 
+                type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-8 pl-20 bg-slate-950 border border-white/10 rounded-[40px] outline-none focus:border-blue-600 font-bold transition-all text-sm placeholder:text-slate-900 shadow-inner" 
+                placeholder="••••••••••••"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-5 bg-red-500/10 border border-red-500/20 rounded-3xl">
+              <p className="text-red-500 text-[10px] font-black uppercase text-center italic tracking-widest leading-relaxed">{error}</p>
+            </div>
+          )}
+
+          <button 
+            disabled={loading}
+            className="w-full p-9 bg-white text-slate-950 rounded-[40px] font-black uppercase text-xs tracking-[0.4em] hover:bg-blue-600 hover:text-white transition-all shadow-3xl active:scale-95 disabled:opacity-50"
+          >
+            {loading ? "Registrando Ledger..." : "Validar Acesso Master"}
+          </button>
+        </form>
+
+        <footer className="mt-16 pt-12 border-t border-white/5 text-center">
+          <Link href="/login" className="text-slate-600 hover:text-blue-500 transition-all font-black text-[11px] uppercase tracking-[0.3em] italic">
+            Já possui acesso? <span className="text-blue-500 border-b border-blue-500/20 ml-2">Login Terminal</span>
+          </Link>
+        </footer>
+      </motion.div>
+
+      <div className="mt-16 flex items-center gap-5 text-slate-800 text-[11px] font-black uppercase tracking-[0.8em] italic">
+        <ShieldAlert size={18} /> <ShieldCheck size={18} /> High Security Enrollment
+      </div>
     </div>
   );
 }
