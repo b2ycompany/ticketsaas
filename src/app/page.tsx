@@ -1,234 +1,325 @@
 "use client";
-import { useEffect, useState } from "react";
+
 import Link from "next/link";
-import { motion, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
-  Zap, Shield, BarChart3, Globe, ChevronRight, CheckCircle2, 
-  MessageCircle, Phone, ArrowRight, Cog, HardDrive, Users, Send,
-  Layers, Cpu, Activity, MousePointer2, Database
+  Zap, 
+  ShieldCheck, 
+  Cpu, 
+  Activity, 
+  ArrowRight, 
+  CheckCircle2, 
+  Terminal,
+  FileText,
+  Workflow,
+  Network,
+  ChevronRight,
+  ShieldAlert,
+  LayoutGrid,
+  Database,
+  Layers,
+  CpuIcon,
+  Fingerprint,
+  BarChart3,
+  Server
 } from "lucide-react";
 
-// --- COMPONENTE DE CONTADOR ANIMADO (EFEITO ODÓMETRO) ---
-function Counter({ value }: { value: number }) {
-  const motionValue = useMotionValue(0);
-  const springValue = useSpring(motionValue, { damping: 30, stiffness: 100 });
-  const [display, setDisplay] = useState(0);
-
-  useEffect(() => {
-    motionValue.set(value);
-    return springValue.on("change", (latest) => setDisplay(Math.round(latest)));
-  }, [value, motionValue, springValue]);
-
-  return <span>{display.toLocaleString()}</span>;
-}
-
-export default function LandingPage() {
-  const [isHovered, setIsHovered] = useState<string | null>(null);
-
-  const stats = [
-    { label: "Tickets Gerados/Mês", value: 1250400, icon: <Database className="text-blue-500" /> },
-    { label: "Uptime da Operação", value: 99, suffix: ".99%", icon: <Activity className="text-emerald-500" /> },
-    { label: "Economia de OPEX", value: 45, suffix: "%", icon: <BarChart3 className="text-purple-500" /> },
-    { label: "Integrações Ativas", value: 850, icon: <Layers className="text-orange-500" /> }
-  ];
-
+/**
+ * B2Y MASTER - INSTITUTIONAL COMMAND CENTER V2.5
+ * Engine de Vendas por Autoridade Técnica e Governança Industrial.
+ */
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
+    <div className="min-h-screen bg-[#020617] text-white font-sans selection:bg-blue-500/40 overflow-x-hidden">
       
-      {/* 1. NAVEGAÇÃO PREMIUM */}
-      <nav className="fixed top-0 w-full z-[100] bg-white/80 backdrop-blur-2xl border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-8 h-20 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <motion.div whileHover={{ scale: 1.1 }} className="bg-blue-600 p-2.5 rounded-2xl shadow-lg shadow-blue-500/40 cursor-pointer">
-              <Zap className="text-white fill-current" size={20} />
-            </motion.div>
-            <span className="text-2xl font-black tracking-tighter italic uppercase text-slate-950">
-              Ticket<span className="text-blue-600">Master</span>
-            </span>
+      {/* NAVBAR DE ALTA PERFORMANCE (BENCHMARK) */}
+      <nav className="fixed top-0 w-full z-[100] bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 px-10 py-6">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-4 group cursor-pointer">
+            <div className="bg-blue-600 p-2.5 rounded-xl shadow-[0_0_30px_rgba(37,99,235,0.4)] group-hover:rotate-12 transition-transform duration-500">
+              <Zap className="text-white fill-current" size={22} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black italic uppercase tracking-tighter leading-none text-white">TicketMaster</span>
+              <span className="text-[8px] font-black text-blue-500 uppercase tracking-[0.4em] mt-1">Enterprise Service Management</span>
+            </div>
           </div>
           
-          <div className="hidden lg:flex items-center gap-10">
-            {["Soluções", "Estatísticas", "Fluxo", "Consultoria"].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-[10px] font-black text-slate-400 hover:text-blue-600 transition tracking-[0.3em] uppercase">
+          <div className="hidden lg:flex items-center gap-12">
+            {["Metodologia", "Integrações", "Governança", "Compliance"].map((item) => (
+              <a key={item} href={`#${item.toLowerCase()}`} className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all italic hover:tracking-[0.2em]">
                 {item}
               </a>
             ))}
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden sm:block text-[10px] font-black text-slate-400 hover:text-slate-900 transition tracking-widest uppercase">Login</Link>
-            <Link href="https://wa.me/SEUNUMERO" className="bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black text-[10px] tracking-widest hover:bg-blue-600 transition-all shadow-xl uppercase flex items-center gap-2">
-              <MessageCircle size={16} /> Comercial
+            <Link href="/login" className="bg-blue-600 px-10 py-3.5 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-white hover:text-blue-600 transition-all shadow-2xl shadow-blue-600/30 active:scale-95">
+              Acessar Terminal
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* 2. HERO SECTION DINÂMICA */}
-      <header className="relative pt-52 pb-40 px-8">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30 pointer-events-none">
-          <div className="absolute top-40 left-20 w-96 h-96 bg-blue-400 rounded-full blur-[150px] animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-[500px] h-[500px] bg-purple-400 rounded-full blur-[180px]"></div>
-        </div>
-
-        <motion.div 
-          initial={{ y: 30, opacity: 0 }} 
-          animate={{ y: 0, opacity: 1 }} 
-          transition={{ duration: 0.8 }}
-          className="max-w-7xl mx-auto text-center"
-        >
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-slate-900 text-white mb-10 shadow-2xl">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            <span className="text-[10px] font-black uppercase tracking-[0.3em]">The New Era of IT Governance</span>
-          </div>
+      {/* HERO SECTION - O IMPACTO CORPORATIVO */}
+      <section className="relative pt-52 pb-40 px-10 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-transparent -z-10" />
+        
+        <div className="max-w-6xl mx-auto text-center">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+            className="inline-flex items-center gap-4 px-6 py-2.5 bg-white/5 border border-white/10 rounded-full text-blue-500 text-[10px] font-black uppercase tracking-[0.5em] mb-14 italic backdrop-blur-md"
+          >
+            <ShieldAlert size={14} className="animate-pulse text-blue-600" /> B2Y Master Intelligence Framework v2.5 Active
+          </motion.div>
           
-          <h1 className="text-7xl md:text-[130px] font-black tracking-tighter mb-12 leading-[0.75] text-slate-950">
-            A infraestrutura <br />
-            <span className="text-blue-600 italic">sob controlo total.</span>
-          </h1>
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            className="text-7xl md:text-[140px] font-black italic uppercase tracking-tighter leading-[0.8] mb-16 text-white"
+          >
+            Governe o <br /> <span className="text-blue-600">Impossível.</span>
+          </motion.h1>
           
-          <p className="text-xl md:text-2xl text-slate-500 max-w-4xl mx-auto mb-20 font-medium leading-relaxed">
-            Substitua a complexidade do ServiceNow e a lentidão do Jira por uma plataforma agnóstica. 
-            Conecte o seu monitoramento ao atendimento em milissegundos.
-          </p>
+          <motion.p 
+            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            className="max-w-3xl mx-auto text-slate-400 text-xl md:text-2xl font-medium italic leading-relaxed mb-20 px-4"
+          >
+            A infraestrutura definitiva para organizações Tier-1. Centralize Jira, ServiceNow e Zabbix em um Ledger de auditoria imutável e preditivo.
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/register" className="bg-blue-600 text-white px-14 py-8 rounded-[35px] font-black text-2xl flex items-center justify-center gap-4 hover:bg-slate-900 transition-all shadow-[0_20px_50px_rgba(37,99,235,0.4)] group">
-                Iniciar Transformação <ChevronRight size={24} className="group-hover:translate-x-2 transition-transform" />
-              </Link>
-            </motion.div>
-          </div>
-        </motion.div>
-      </header>
-
-      {/* 3. NÚMEROS E INDICADORES (ESTATÍSTICAS) */}
-      <section id="estatísticas" className="py-24 border-y border-slate-50 bg-slate-50/50">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            {stats.map((s, i) => (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                key={i} className="text-center group"
-              >
-                <div className="inline-flex p-4 rounded-2xl bg-white shadow-sm mb-6 group-hover:scale-110 transition-transform">
-                  {s.icon}
-                </div>
-                <p className="text-6xl font-black text-slate-900 tracking-tighter">
-                  <Counter value={s.value} />{s.suffix}
-                </p>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4 leading-relaxed">{s.label}</p>
-              </motion.div>
-            ))}
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="flex flex-col md:flex-row items-center justify-center gap-8"
+          >
+            <Link href="/login" className="w-full md:w-auto bg-white text-slate-950 px-16 py-8 rounded-[30px] font-black uppercase text-sm tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] group">
+              Iniciar Operação Master <ArrowRight className="inline ml-4 group-hover:translate-x-2 transition-transform" />
+            </Link>
+            <a href="#documentação" className="w-full md:w-auto bg-white/5 border border-white/10 text-white px-16 py-8 rounded-[30px] font-black uppercase text-sm tracking-widest hover:bg-white/10 transition-all italic">
+              Technical Specs
+            </a>
+          </motion.div>
         </div>
       </section>
 
-      {/* 4. FLUXO DE ATENDIMENTO VISUAL */}
-      <section id="fluxo" className="py-40 bg-slate-950 text-white rounded-[80px] mx-4 md:mx-8 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(#2563eb_1px,transparent_1px)] [background-size:40px_40px]"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-8 relative z-10">
-          <div className="text-center mb-32">
-            <h2 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 leading-none">Fluxo de <span className="text-blue-500 italic">Alta Performance</span></h2>
-            <p className="text-slate-400 text-xl max-w-2xl mx-auto font-medium leading-relaxed">
-              O segredo das maiores operações do mundo agora disponível para a sua empresa.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 relative">
-            {[
-              { title: "Monitorização", desc: "Captura inteligente de eventos e alertas críticos.", icon: <HardDrive /> },
-              { title: "Motor de Regras", desc: "Triagem instantânea baseada em regras de negócio.", icon: <Cog /> },
-              { title: "Help Desk", desc: "Atendimento unificado para técnicos e fornecedores.", icon: <Users /> },
-              { title: "Resolução", desc: "Fecho de tickets com análise de causa raiz e IA.", icon: <CheckCircle2 /> }
-            ].map((item, i) => (
-              <motion.div 
-                key={i}
-                whileHover={{ scale: 1.05 }}
-                className="relative bg-slate-900/50 backdrop-blur-md p-12 rounded-[50px] border border-slate-800 group overflow-hidden"
-              >
-                <div className="absolute -right-4 -top-4 text-9xl font-black text-white/[0.03] italic">{i + 1}</div>
-                <div className="text-blue-500 mb-8 p-4 bg-blue-500/10 rounded-2xl inline-block">{item.icon}</div>
-                <h4 className="text-2xl font-black mb-4 group-hover:text-blue-400 transition-colors">{item.title}</h4>
-                <p className="text-slate-500 text-sm leading-relaxed font-medium">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
+      {/* MÉTRICAS DE AUTORIDADE (BENCHMARK) */}
+      <section className="py-32 px-10 bg-slate-950/50 border-y border-white/5">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-16">
+          {[
+            { label: "SLA Efficiency", val: "99.98%", sub: "Industrial Grade" },
+            { label: "MTTR System", val: "12m", sub: "Latency Benchmark" },
+            { label: "Atomic Ingest", val: "4ms", sub: "Gateway Response" },
+            { label: "Trust Score", val: "100%", sub: "Zero-Trust Architecture" }
+          ].map((k, i) => (
+            <div key={i} className="flex flex-col items-center lg:items-start group cursor-default">
+              <p className="text-6xl font-black italic text-white mb-3 tracking-tighter group-hover:text-blue-500 transition-colors">{k.val}</p>
+              <div className="flex items-center gap-3">
+                <div className="h-px w-8 bg-blue-600" />
+                <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.3em]">{k.label}</p>
+              </div>
+              <p className="text-[9px] font-bold text-blue-900 uppercase italic mt-2 tracking-widest">{k.sub}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* 5. FORMULÁRIO DE PROJETOS E CONSULTORIA COMERCIAL */}
-      <section id="consultoria" className="py-48 max-w-7xl mx-auto px-8">
-        <div className="bg-slate-50 rounded-[80px] p-12 md:p-24 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-          <div>
-            <span className="text-blue-600 font-black text-xs uppercase tracking-[0.4em] mb-6 block italic underline">Business & Projects</span>
-            <h2 className="text-6xl md:text-7xl font-black tracking-tighter mb-10 leading-none text-slate-950">
-              Engrandeça sua <br /> <span className="text-blue-600 italic">operação hoje.</span>
-            </h2>
-            <p className="text-xl text-slate-500 mb-12 leading-relaxed font-medium">
-              Não somos uma plataforma de prateleira. Somos arquitetos de processos. 
-              Fale com o nosso time técnico-comercial para um projeto personalizado.
-            </p>
+      {/* SEÇÃO: METODOLOGIA B2Y GOVERNANCE */}
+      <section id="metodologia" className="py-48 px-10 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-32">
+            <div className="lg:w-1/2">
+              <div className="flex items-center gap-4 text-blue-500 mb-8 italic">
+                <ShieldCheck size={24} />
+                <span className="text-[12px] font-black uppercase tracking-[0.6em]">Enterprise Framework v2.5</span>
+              </div>
+              <h2 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter leading-[0.9] mb-12">
+                Governança <br /> <span className="text-blue-600">Invisível.</span>
+              </h2>
+              <p className="text-slate-400 text-2xl font-medium italic leading-relaxed mb-16">
+                Nossa metodologia de **SLA Predictive Alerting** analisa a volumetria e matriz de resposta para intervir nos fornecedores antes da falha. Reduza multas contratuais com automação inteligente.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                {[
+                  { t: "Dynamic Matrix", d: "Configuração de SLAs por Tiers de Prioridade (ITIL 4)." },
+                  { t: "Vendor ESM", d: "Gestão centralizada de múltiplos parceiros externos." },
+                  { t: "Immutable Logs", d: "Rastreio auditável de cada transição de estado." },
+                  { t: "Pre-SLA Trigger", d: "Alertas via Webhook disparados em 80% da meta." }
+                ].map((item, i) => (
+                  <div key={i} className="space-y-4">
+                    <div className="flex items-center gap-4 text-blue-600">
+                      <CheckCircle2 size={20} />
+                      <span className="text-sm font-black uppercase tracking-widest text-white italic">{item.t}</span>
+                    </div>
+                    <p className="text-slate-500 text-sm font-medium italic leading-relaxed">{item.d}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
             
-            <div className="grid grid-cols-1 gap-6">
+            {/* PIPELINE OPERACIONAL VISUAL (DOCUMENTAÇÃO) */}
+            <div className="lg:w-1/2 bg-white/[0.02] border border-white/10 rounded-[80px] p-16 shadow-3xl relative group overflow-hidden">
+              <div className="absolute -top-20 -right-20 opacity-5 scale-150 rotate-12 group-hover:rotate-0 transition-transform duration-1000"><Workflow size={400} /></div>
+              <h3 className="text-3xl font-black italic uppercase mb-16 flex items-center gap-6 relative z-10">
+                <Terminal className="text-blue-500" /> Operational Ledger
+              </h3>
+              
+              <div className="space-y-12 relative z-10">
+                {[
+                  { n: "01", t: "API Data Ingestion", d: "Sync bidirecional com Jira/Zabbix/ServiceNow.", icon: <Database /> },
+                  { n: "02", t: "Workflow Processor", d: "Mapeamento dinâmico em filas de atendimento.", icon: <Layers /> },
+                  { n: "03", t: "Audit Compliance", d: "Geração de Relatórios Executivos em PDF.", icon: <ShieldCheck /> }
+                ].map((step, idx) => (
+                  <div key={idx} className="flex gap-10 group/step">
+                    <div className="flex flex-col items-center">
+                      <div className="h-16 w-16 bg-blue-600 rounded-3xl flex items-center justify-center font-black text-2xl shadow-2xl group-hover/step:scale-110 transition-transform">
+                        {step.n}
+                      </div>
+                      {idx !== 2 && <div className="h-20 w-px bg-white/10 my-4" />}
+                    </div>
+                    <div className="pt-3">
+                      <h4 className="text-xl font-black uppercase italic text-white mb-2">{step.t}</h4>
+                      <p className="text-slate-500 font-bold text-[11px] uppercase tracking-[0.3em] italic">{step.d}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* DIFERENCIAIS DE MERCADO (O VALOR DO NEGÓCIO) */}
+      <section id="integrações" className="py-48 px-10 bg-[#0a0f1e]/40 border-y border-white/5">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-32">
+            <h2 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter mb-8 leading-none">Diferenciais Elite</h2>
+            <p className="text-slate-500 font-black text-[12px] uppercase tracking-[0.8em] italic">O que separa a B2Y do suporte comum</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {[
+              { 
+                t: "Unified Integration Hub", 
+                d: "Centralize chaves de API e Webhooks em um único console. Reduza a complexidade de integração para segundos.", 
+                i: <Network />, 
+                c: "text-blue-500" 
+              },
+              { 
+                t: "Industrial SLA Matrix", 
+                d: "Controle MTTR e Response Time por parceiro. Nossa matriz é baseada na engenharia das maiores plataformas ESM.", 
+                i: <BarChart3 />, 
+                c: "text-emerald-500" 
+              },
+              { 
+                t: "AI-Ready Gateway", 
+                d: "Pronto para automação de Nível 1. Deixe que nossos Webhooks gerenciem a triagem pesada da sua infraestrutura.", 
+                i: <Cpu />, 
+                c: "text-purple-500" 
+              }
+            ].map((card, i) => (
+              <div key={i} className="bg-slate-950 border border-white/5 p-16 rounded-[70px] shadow-3xl hover:border-blue-600/40 transition-all group relative overflow-hidden">
+                <div className="absolute -right-10 -bottom-10 opacity-[0.02] scale-[3] group-hover:scale-[3.5] transition-transform duration-700">{card.i}</div>
+                <div className={`${card.c} mb-12 group-hover:scale-110 transition-transform duration-500`}>{card.i}</div>
+                <h4 className="text-3xl font-black italic uppercase mb-8 leading-none tracking-tighter text-white">{card.t}</h4>
+                <p className="text-slate-400 text-lg font-medium italic leading-relaxed">{card.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DOCUMENTAÇÃO TÉCNICA E SEGURANÇA (TRUST CENTER) */}
+      <section id="governança" className="py-48 px-10 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-start">
+          <div className="sticky top-48">
+            <h2 className="text-6xl font-black italic uppercase tracking-tighter mb-10 leading-[0.9]">Trust Center <br /> & Dev Portal.</h2>
+            <p className="text-slate-500 font-medium text-xl italic mb-16 leading-relaxed">
+              Desenvolvido com padrões militares de segurança. Seguimos rigorosamente **ISO 27001**, **SOC-2 Type II** e protocolos de redundância Tier-3.
+            </p>
+            <div className="space-y-6">
               {[
-                "Redução imediata de 40% em falsos-positivos",
-                "Faturamento por Projeto ou Tenant (sem custo por técnico)",
-                "Implementação completa em até 48 horas úteis"
-              ].map((text, i) => (
-                <div key={i} className="flex items-center gap-4 text-slate-800 font-bold text-lg">
-                  <div className="bg-green-100 text-green-600 p-1 rounded-full"><CheckCircle2 size={20} /></div>
-                  {text}
+                { title: "API Endpoint Reference", desc: "Mapeamento JSON para integração externa." },
+                { title: "SLA Matrix Logic", desc: "Algoritmos de cálculo de penalidades e conformidade." },
+                { title: "Governance Ledger", desc: "Logs de transação imutáveis baseados em Firebase." }
+              ].map((doc, i) => (
+                <div key={i} className="flex items-center justify-between p-8 bg-white/5 rounded-[40px] border border-white/10 hover:bg-blue-600 hover:border-blue-500 transition-all cursor-pointer group shadow-xl">
+                  <div className="flex items-center gap-6">
+                    <FileText className="text-blue-500 group-hover:text-white" size={24} />
+                    <span className="text-[12px] font-black uppercase tracking-widest italic text-white">{doc.title}</span>
+                  </div>
+                  <ChevronRight size={20} className="text-slate-700 group-hover:text-white transition-all" />
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="bg-white p-12 rounded-[60px] shadow-[0_50px_100px_rgba(0,0,0,0.05)] border border-slate-100 relative">
-            <div className="absolute -top-6 -right-6 bg-blue-600 text-white p-6 rounded-3xl shadow-xl rotate-12 hidden md:block">
-              <Phone size={24} />
+          {/* SIMULADOR DE PAYLOAD CORRIGIDO (ZERO ANY, ZERO ERROR) */}
+          <div className="bg-[#0a0f1e] border border-white/10 rounded-[80px] p-16 font-mono text-[12px] shadow-3xl relative overflow-hidden group">
+            <div className="absolute top-8 right-12 flex gap-3">
+              <div className="h-3 w-3 rounded-full bg-red-500/30" />
+              <div className="h-3 w-3 rounded-full bg-orange-500/30" />
+              <div className="h-3 w-3 rounded-full bg-green-500/30" />
+            </div>
+            <div className="text-blue-500 mb-12 font-black uppercase tracking-widest italic flex items-center gap-4">
+              <Terminal size={20} /> 
+              
+            </div>
+            <p className="text-slate-600 mb-8 italic"># POST /api/webhooks/ingest - Auth: Bearer B2Y_SECURE_HASH</p>
+            <div className="text-slate-300 leading-relaxed space-y-2 select-none">
+              <p className="text-blue-900">{"{"}</p>
+              <p className="ml-8 tracking-widest"><span className="text-emerald-600">&quot;provider&quot;</span>: <span className="text-blue-400">&quot;ZABBIX_NOC&quot;</span>,</p>
+              <p className="ml-8 tracking-widest"><span className="text-emerald-600">&quot;timestamp&quot;</span>: <span className="text-blue-400">&quot;{new Date().toISOString()}&quot;</span>,</p>
+              <p className="ml-8 tracking-widest"><span className="text-emerald-600">&quot;payload&quot;</span>: {"{"}</p>
+              <p className="ml-16 tracking-widest"><span className="text-emerald-600">&quot;id&quot;</span>: <span className="text-blue-400">&quot;ALERT-8821&quot;</span>,</p>
+              <p className="ml-16 tracking-widest"><span className="text-emerald-600">&quot;impact&quot;</span>: <span className="text-red-500">&quot;CRITICAL_OUTAGE&quot;</span>,</p>
+              <p className="ml-16 tracking-widest"><span className="text-emerald-600">&quot;trigger&quot;</span>: <span className="text-blue-400">&quot;Packet loss &gt; 25% on Core-SW-01&quot;</span></p>
+              <p className="ml-8">{"}"}</p>
+              <p className="text-blue-900">{"}"}</p>
             </div>
             
-            <form className="space-y-8">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Dados do Consultor Responsável</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" placeholder="Seu Nome" className="w-full p-6 bg-slate-50 rounded-3xl border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800 transition-all" />
-                  <input type="text" placeholder="Sua Empresa" className="w-full p-6 bg-slate-50 rounded-3xl border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800 transition-all" />
-                </div>
+            <div className="mt-16 p-10 bg-blue-600/10 border border-blue-600/20 rounded-[45px] shadow-inner">
+              <div className="flex items-center gap-4 mb-4">
+                <Activity size={14} className="text-blue-500 animate-pulse" />
+                <p className="text-blue-500 font-black italic uppercase text-[10px] tracking-widest leading-none">Gateway Response:</p>
               </div>
-              <input type="email" placeholder="E-mail Corporativo" className="w-full p-6 bg-slate-50 rounded-3xl border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800 transition-all" />
-              <div className="space-y-2">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Escopo do Projeto</label>
-                 <textarea placeholder="Ex: Integração Zabbix + NOC 24/7 para 500 servidores." className="w-full p-6 bg-slate-50 rounded-3xl border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800 h-32 transition-all resize-none"></textarea>
-              </div>
-              <button className="group w-full bg-slate-900 text-white py-8 rounded-[30px] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-4 hover:bg-blue-600 transition-all shadow-2xl">
-                <Send size={18} className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
-                Solicitar Proposta Técnica
-              </button>
-            </form>
+              <p className="text-emerald-500 font-black text-xs leading-relaxed italic">HTTP 201: INCIDENT_CREATED &bull; QUEUE: TRIA_N1</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="py-24 border-t border-slate-50 bg-white">
-        <div className="max-w-7xl mx-auto px-8 text-center">
-          <div className="flex justify-center gap-12 mb-16">
-            <Link href="https://wa.me/SEUNUMERO" className="text-slate-400 hover:text-green-500 transition-colors"><MessageCircle size={32} /></Link>
-            <Link href="tel:+SEUNUMERO" className="text-slate-400 hover:text-blue-500 transition-colors"><Phone size={32} /></Link>
+      {/* CTA DE VENDAS FINAL (MILIONÁRIO) */}
+      <section className="py-52 px-10 bg-gradient-to-br from-blue-600 to-indigo-950 text-center relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+          <Network size={1000} className="scale-125 rotate-12" />
+        </div>
+        <div className="max-w-5xl mx-auto relative z-10 px-4">
+          <h2 className="text-7xl md:text-[140px] font-black italic uppercase tracking-tighter mb-16 leading-[0.8] text-white">
+            Pare de reagir. <br /> Comece a <span className="text-indigo-300/40 italic">governar.</span>
+          </h2>
+          <Link href="/login" className="inline-flex items-center gap-8 bg-white text-blue-600 px-20 py-10 rounded-[45px] font-black uppercase text-lg tracking-[0.3em] hover:scale-105 hover:bg-slate-100 transition-all shadow-[0_0_100px_rgba(255,255,255,0.2)] active:scale-95 group">
+            Obter Acesso Master <ArrowRight size={36} className="group-hover:translate-x-4 transition-transform duration-500" />
+          </Link>
+          <div className="mt-20 flex flex-wrap justify-center items-center gap-12 text-[11px] font-black uppercase tracking-[0.6em] text-white/30 italic">
+            <span className="flex items-center gap-3"><Fingerprint size={18} /> Zero-Trust Access</span>
+            <div className="h-1.5 w-1.5 bg-blue-600 rounded-full animate-pulse" />
+            <span className="flex items-center gap-3"><CpuIcon size={18} /> Engine AI Analytics</span>
+            <div className="h-1.5 w-1.5 bg-blue-600 rounded-full animate-pulse" />
+            <span className="flex items-center gap-3"><Server size={18} /> Tier-3 Infrastructure</span>
           </div>
-          <p className="text-slate-300 font-black text-[10px] uppercase tracking-[0.6em] mb-4">The Future of ITSM is here</p>
-          <p className="text-slate-400 font-bold text-xs uppercase tracking-widest italic">&copy; 2026 B2Y Company Solutions - TicketMaster v1.0.4</p>
+        </div>
+      </section>
+
+      {/* FOOTER CORPORATIVO */}
+      <footer className="py-24 px-10 border-t border-white/5 bg-[#020617] relative">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-16">
+          <div className="flex items-center gap-4 group cursor-pointer">
+             <Zap className="text-blue-600 group-hover:scale-125 transition-transform duration-700" size={36} />
+             <span className="text-4xl font-black italic uppercase tracking-tighter leading-none">B2Y MASTER</span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-widest text-slate-700 italic">
+            <a href="#" className="hover:text-blue-500 transition-all">Privacy Policy</a>
+            <a href="#" className="hover:text-blue-500 transition-all">Governance Protocol</a>
+            <a href="#" className="hover:text-blue-500 transition-all">SLA Ethics</a>
+            <a href="#" className="hover:text-blue-500 transition-all">SOC-2 Readiness</a>
+          </div>
+          <p className="text-slate-800 font-black text-[10px] uppercase tracking-widest italic">&copy; 2026 B2Y Global Intelligence Unit &bull; Enterprise Division</p>
         </div>
       </footer>
     </div>
