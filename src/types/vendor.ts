@@ -1,14 +1,18 @@
 import { Timestamp } from "firebase/firestore";
 
-/**
- * VENDOR INTERFACE - B2Y GOVERNANCE
- * Define a estrutura de fornecedores externos e seus SLAs contratuais.
- */
+export interface VendorSLA {
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  responseTime: number; // em minutos
+  resolutionTime: number; // em minutos
+}
+
 export interface Vendor {
   id: string;
   name: string;
-  defaultSla: string;
+  category: 'cloud' | 'software' | 'hardware' | 'network';
+  contactEmail: string;
   active: boolean;
+  slas: VendorSLA[];
+  customColumns: string[]; // Filas específicas deste fornecedor
   createdAt: Timestamp | Date;
-  updatedAt?: Timestamp | Date;
 }
