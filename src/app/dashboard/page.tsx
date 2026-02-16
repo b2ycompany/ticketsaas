@@ -1,9 +1,18 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { db, auth } from "../../lib/firebase";
-import { collection, query, onSnapshot, orderBy, where, Timestamp } from "firebase/firestore";
+import { 
+  collection, 
+  query, 
+  onSnapshot, 
+  orderBy, 
+  addDoc, 
+  serverTimestamp, 
+  Timestamp 
+} from "firebase/firestore";
 import { Ticket } from "../../types/ticket";
 import { 
   LayoutDashboard, 
@@ -11,230 +20,269 @@ import {
   LogOut, 
   AlertCircle, 
   Search, 
-  Filter, 
-  Bell, 
-  User as UserIcon,
   Activity,
   ShieldCheck,
-  Zap
+  Zap,
+  BarChart3,
+  Clock,
+  PlayCircle,
+  Plus,
+  Settings,
+  Bell,
+  Terminal
 } from "lucide-react";
 import TicketDetailSidebar from "@/components/TicketDetailSidebar";
 import { motion, AnimatePresence } from "framer-motion";
 
+/**
+ * DASHBOARD PAGE COMPONENT
+ * Plataforma de Governança B2Y Master - Versão Enterprise 2026
+ */
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  
-  // Estados de Dados
+
+  // --- ESTADOS DE NAVEGAÇÃO E DADOS ---
+  const [activeTab, setActiveTab] = useState<"tickets" | "sla" | "auditoria">("tickets");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isInjecting, setIsInjecting] = useState<boolean>(false);
 
-  // PROTEÇÃO DE ROTA: Segurança em primeiro lugar
+  // --- PROTEÇÃO DE ROTA ---
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
     }
   }, [user, authLoading, router]);
 
-  // ENGINE DE SINCRONIZAÇÃO REAL-TIME (FIRESTORE)
+  // --- SINCRONIZAÇÃO EM TEMPO REAL COM FIRESTORE ---
   useEffect(() => {
     if (!user) return;
 
-    const q = query(
-      collection(db, "tickets"), 
-      orderBy("createdAt", "desc")
-    );
+    const ticketsRef = collection(db, "tickets");
+    const q = query(ticketsRef, orderBy("createdAt", "desc"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
+      const ticketsList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
       })) as Ticket[];
       
-      setTickets(data);
+      setTickets(ticketsList);
       setLoading(false);
-    }, (error) => {
-      console.error("Erro na sincronização de dados:", error);
+    }, (err) => {
+      console.error("Erro crítico na stream de dados:", err);
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [user]);
 
-  // Lógica de Filtro e Busca
+  // --- ENGINE DE INJEÇÃO DE DADOS (STRESS TEST) ---
+  const injectSampleTickets = useCallback(async () => {
+    if (isInjecting) return;
+    setIsInjecting(true);
+
+    const samplePool = [
+      { title: "ZABBIX: High CPU utilization on Core-Switch-01", priority: "critical", customer: "Lion Solution", src: "ZABBIX_V7" },
+      { title: "SECURITY: Brute force attack detected from IP 192.168.1.45", priority: "critical", customer: "B2Y Global", src: "SOC_INTERNAL" },
+      { title: "STORAGE: Disk space low on Backup-Server-03 (95%)", priority: "high", customer: "Lion Solution", src: "VEAAM_CLOUD" },
+      { title: "SLA ALERT: Incident #44521 is reaching expiration", priority: "medium", customer: "Internal_IT", src: "B2Y_ENGINE" },
+      { title: "NETWORK: Packet loss detected on VPN Gateway Brasil", priority: "high", customer: "Lion Solution", src: "CISCO_MERAKI" }
+    ];
+
+    try {
+      for (const item of samplePool) {
+        await addDoc(collection(db, "tickets"), {
+          title: item.title,
+          description: `Incidente automatizado via gateway ${item.src}. Analisar logs de rede imediatamente.`,
+          status: "open",
+          priority: item.priority,
+          customerName: item.customer,
+          source: item.src,
+          tenantId: user?.uid || "system",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          slaDeadline: new Date(Date.now() + 7200000), // +2 horas
+        });
+      }
+      console.log("Massa de dados injetada com sucesso.");
+    } catch (error) {
+      console.error("Falha na injeção de teste:", error);
+    } finally {
+      setIsInjecting(false);
+    }
+  }, [user, isInjecting]);
+
+  // --- LÓGICA DE FILTRAGEM ---
   const filteredTickets = useMemo(() => {
-    return tickets.filter(t => {
-      const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           t.customerName.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter = filterStatus === "all" || t.status === filterStatus;
-      return matchesSearch && matchesFilter;
+    return tickets.filter((t) => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        t.title.toLowerCase().includes(searchLower) ||
+        t.customerName.toLowerCase().includes(searchLower) ||
+        t.id?.toLowerCase().includes(searchLower)
+      );
     });
-  }, [tickets, searchQuery, filterStatus]);
+  }, [tickets, searchQuery]);
 
-  // Cálculos de KPIs para a Diretoria
-  const stats = useMemo(() => ({
-    total: tickets.length,
-    critical: tickets.filter(t => t.priority === 'critical' && t.status !== 'resolved').length,
-    open: tickets.filter(t => t.status === 'open').length,
-  }), [tickets]);
-
-  if (authLoading) {
+  // --- BLOQUEIO DE RENDERIZAÇÃO ---
+  if (authLoading || !user) {
     return (
-      <div className="h-screen bg-[#020617] flex flex-col items-center justify-center text-white">
-        <div className="h-16 w-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="font-black italic uppercase tracking-[0.3em] text-xs">Acessando Terminal...</p>
+      <div className="h-screen bg-slate-950 flex flex-col items-center justify-center space-y-4">
+        <div className="h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <span className="text-white font-black uppercase tracking-widest text-xs">Authenticating Session...</span>
       </div>
     );
   }
 
-  if (!user) return null;
-
   return (
     <div className="flex h-screen bg-[#020617] text-white font-sans overflow-hidden">
       
-      {/* SIDEBAR DE COMANDO */}
-      <aside className="w-80 bg-slate-900/40 backdrop-blur-2xl border-r border-white/5 p-8 flex flex-col z-50">
-        <div className="flex items-center gap-3 mb-12">
-          <div className="bg-blue-600 p-2.5 rounded-2xl shadow-lg shadow-blue-500/40">
-            <Zap className="text-white fill-current" size={20} />
+      {/* SIDEBAR DE COMANDO LATERAL */}
+      <aside className="w-80 bg-slate-900/40 backdrop-blur-3xl border-r border-white/5 p-8 flex flex-col z-[100]">
+        <div className="flex items-center gap-4 mb-16">
+          <div className="bg-blue-600 p-3 rounded-2xl shadow-[0_0_30px_rgba(37,99,235,0.4)]">
+            <Zap className="text-white fill-current" size={24} />
           </div>
-          <span className="font-black text-2xl tracking-tighter italic uppercase">
-            TICKET<span className="text-blue-500">MASTER</span>
-          </span>
+          <div className="flex flex-col">
+            <span className="font-black text-2xl tracking-tighter leading-none italic uppercase">TicketMaster</span>
+            <span className="text-[9px] font-black text-blue-500 uppercase tracking-[0.3em] mt-1">Enterprise Suite</span>
+          </div>
         </div>
 
-        <nav className="flex-1 space-y-3">
-          <button className="flex items-center gap-4 w-full p-4 bg-blue-600 rounded-[22px] font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/20 transition-all">
-            <TicketIcon size={18} /> <span>Fila de Incidentes</span>
+        <nav className="flex-1 space-y-4">
+          <button 
+            onClick={() => setActiveTab("tickets")} 
+            className={`flex items-center gap-4 w-full p-5 rounded-[25px] font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === "tickets" ? "bg-blue-600 shadow-2xl shadow-blue-600/30 text-white" : "text-slate-500 hover:text-white hover:bg-white/5"}`}
+          >
+            <TicketIcon size={20} /> <span>Incidentes Live</span>
           </button>
-          <button className="flex items-center gap-4 w-full p-4 text-slate-500 hover:text-white hover:bg-white/5 rounded-[22px] font-black text-[10px] uppercase tracking-widest transition-all">
-            <Activity size={18} /> <span>Análise de SLA</span>
+          <button 
+            onClick={() => setActiveTab("sla")} 
+            className={`flex items-center gap-4 w-full p-5 rounded-[25px] font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === "sla" ? "bg-blue-600 shadow-2xl shadow-blue-600/30 text-white" : "text-slate-500 hover:text-white hover:bg-white/5"}`}
+          >
+            <Activity size={20} /> <span>Analytics SLA</span>
           </button>
-          <button className="flex items-center gap-4 w-full p-4 text-slate-500 hover:text-white hover:bg-white/5 rounded-[22px] font-black text-[10px] uppercase tracking-widest transition-all">
-            <ShieldCheck size={18} /> <span>Auditoria e Logs</span>
+          <button 
+            onClick={() => setActiveTab("auditoria")} 
+            className={`flex items-center gap-4 w-full p-5 rounded-[25px] font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === "auditoria" ? "bg-blue-600 shadow-2xl shadow-blue-600/30 text-white" : "text-slate-500 hover:text-white hover:bg-white/5"}`}
+          >
+            <ShieldCheck size={20} /> <span>Auditoria</span>
           </button>
         </nav>
 
-        <div className="mt-auto pt-8 border-t border-white/5 space-y-6">
-          <div className="flex items-center gap-3 px-2">
-            <div className="h-10 w-10 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-full flex items-center justify-center font-black text-xs">
-              {user.email?.substring(0, 2).toUpperCase()}
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-[10px] font-black uppercase tracking-widest text-white truncate">{user.email}</p>
-              <p className="text-[9px] font-bold text-slate-500 uppercase italic">Operador Nível 3</p>
-            </div>
-          </div>
+        <div className="mt-auto space-y-6">
           <button 
-            onClick={() => auth.signOut()}
-            className="flex items-center gap-4 w-full p-4 text-red-500 hover:bg-red-500/10 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest"
+            disabled={isInjecting}
+            onClick={injectSampleTickets} 
+            className="w-full p-5 bg-emerald-500/10 border border-emerald-500/20 rounded-3xl flex items-center justify-center gap-3 font-black text-[10px] uppercase tracking-widest text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50"
           >
-            <LogOut size={18} /> <span>Encerrar Terminal</span>
+            <Terminal size={18} /> {isInjecting ? "Sincronizando..." : "Stress Test (Injetar)"}
           </button>
+          
+          <div className="pt-6 border-t border-white/5">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center font-black text-sm italic">
+                {user.email?.substring(0, 2).toUpperCase()}
+              </div>
+              <div className="flex flex-col overflow-hidden">
+                <p className="text-[10px] font-black text-white truncate uppercase tracking-widest">{user.email}</p>
+                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">Nível de Acesso: Global</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => auth.signOut()} 
+              className="flex items-center gap-4 w-full p-4 text-red-500 hover:bg-red-500/10 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+            >
+              <LogOut size={18} /> <span>Logoff Seguro</span>
+            </button>
+          </div>
         </div>
       </aside>
 
-      {/* ÁREA DE TRABALHO PRINCIPAL */}
-      <main className="flex-1 overflow-y-auto p-12 relative custom-scrollbar">
-        {/* HEADER DE PERFORMANCE */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
-          <div>
-            <h2 className="text-7xl font-black tracking-tighter mb-2 italic">Dashboard</h2>
-            <div className="flex items-center gap-4 text-slate-500">
-               <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                 <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" /> Operação Live
-               </span>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="bg-white/5 border border-white/5 p-6 rounded-[35px] min-w-[140px] text-center">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total</p>
-              <p className="text-4xl font-black">{stats.total}</p>
-            </div>
-            <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-[35px] min-w-[140px] text-center">
-              <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1 italic">Críticos</p>
-              <p className="text-4xl font-black text-red-500">{stats.critical}</p>
-            </div>
-          </div>
-        </header>
-
-        {/* FERRAMENTAS DE FILTRO */}
-        <div className="flex flex-col md:flex-row gap-4 mb-10">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
-            <input 
-              type="text" 
-              placeholder="Pesquisar por título, cliente ou ID..."
-              className="w-full p-6 pl-16 bg-white/5 border border-white/5 rounded-[30px] text-white outline-none focus:border-blue-500/50 transition-all font-bold"
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <select 
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-white/5 border border-white/5 p-6 rounded-[30px] text-slate-400 font-black text-[10px] uppercase tracking-widest outline-none cursor-pointer focus:border-blue-500/50 appearance-none min-w-[180px] text-center"
-          >
-            <option value="all">Todos os Status</option>
-            <option value="open">Abertos</option>
-            <option value="in_progress">Em Atendimento</option>
-            <option value="resolved">Resolvidos</option>
-          </select>
-        </div>
-
-        {/* LISTAGEM DE INCIDENTES COM ANIMAÇÃO */}
-        <div className="grid grid-cols-1 gap-6">
-          <AnimatePresence mode="popLayout">
-            {loading ? (
-              [1, 2, 3].map(i => <div key={i} className="h-32 bg-white/5 rounded-[45px] animate-pulse border border-white/5" />)
-            ) : filteredTickets.length > 0 ? (
-              filteredTickets.map((t) => (
-                <motion.div 
-                  layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  key={t.id} 
-                  onClick={() => setSelectedTicket(t)}
-                  className="bg-white/5 border border-white/5 p-8 rounded-[45px] hover:border-blue-600/50 hover:bg-white/[0.08] transition-all flex items-center justify-between group cursor-pointer"
-                >
-                  <div className="flex items-center gap-8">
-                    <div className={`h-16 w-16 rounded-[22px] flex items-center justify-center shadow-inner ${t.priority === 'critical' ? 'bg-red-500/20 text-red-500' : 'bg-blue-500/20 text-blue-500'}`}>
-                      <AlertCircle size={32} />
-                    </div>
-                    <div>
-                      <h4 className="text-xl font-black group-hover:text-blue-400 transition-colors tracking-tight uppercase italic">{t.title}</h4>
-                      <div className="flex items-center gap-4 mt-2">
-                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{t.customerName}</span>
-                         <span className="h-1 w-1 bg-slate-700 rounded-full" />
-                         <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${t.status === 'open' ? 'text-blue-400' : 'text-emerald-400'}`}>
-                           {t.status.replace('_', ' ')}
-                         </span>
-                      </div>
-                    </div>
+      {/* ÁREA DE TRABALHO DINÂMICA */}
+      <main className="flex-1 overflow-y-auto p-16 relative">
+        <AnimatePresence mode="wait">
+          {activeTab === "tickets" && (
+            <motion.div 
+              key="tickets-view" 
+              initial={{ opacity: 0, y: 20 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <header className="flex justify-between items-end mb-20">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full mb-4">
+                    <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-blue-500 text-[9px] font-black uppercase tracking-widest">Live Operations Center</span>
                   </div>
-                  <div className="flex items-center gap-6">
-                    <div className="text-right hidden md:block">
-                      <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Sincronizado</p>
-                      <p className="text-[10px] font-bold text-slate-400">via {t.source}</p>
-                    </div>
-                    <button className="bg-white text-slate-900 px-10 py-5 rounded-[22px] font-black text-[11px] uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all shadow-xl active:scale-95">
-                      Gerenciar
-                    </button>
+                  <h2 className="text-8xl font-black tracking-tighter italic uppercase text-white leading-none">Console</h2>
+                </div>
+                <div className="flex gap-6">
+                  <div className="bg-white/5 border border-white/5 p-10 rounded-[45px] text-center min-w-[180px] shadow-2xl">
+                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] mb-2 italic">Alertas Totais</p>
+                    <p className="text-6xl font-black italic">{tickets.length}</p>
                   </div>
-                </motion.div>
-              ))
-            ) : (
-              <div className="py-40 text-center bg-white/[0.02] rounded-[60px] border-4 border-dashed border-white/5">
-                 <p className="text-slate-600 font-black text-2xl uppercase italic tracking-tighter">Nenhum incidente encontrado no radar</p>
+                </div>
+              </header>
+
+              <div className="relative mb-14 group">
+                <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-blue-500 transition-colors" size={24} />
+                <input 
+                  type="text" 
+                  placeholder="Pesquisar por cliente, título ou protocolo de incidente..." 
+                  className="w-full p-10 pl-20 bg-white/5 border border-white/5 rounded-[40px] text-white outline-none focus:border-blue-500/50 transition-all font-black text-xl placeholder:text-slate-700 shadow-inner" 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                />
               </div>
-            )}
-          </AnimatePresence>
-        </div>
 
-        {/* SIDEBAR DE DETALHES (SLIDE-OVER) */}
+              <div className="space-y-6">
+                {filteredTickets.length > 0 ? (
+                  filteredTickets.map((t) => (
+                    <motion.div 
+                      layoutId={t.id} 
+                      key={t.id} 
+                      onClick={() => setSelectedTicket(t)} 
+                      className="bg-white/5 border border-white/5 p-10 rounded-[55px] hover:border-blue-600/50 hover:bg-white/[0.08] transition-all flex items-center justify-between group cursor-pointer shadow-xl relative overflow-hidden"
+                    >
+                      <div className="flex items-center gap-12 relative z-10">
+                        <div className={`h-24 w-24 rounded-[30px] flex items-center justify-center shadow-2xl ${t.priority === 'critical' ? 'bg-red-500 text-white animate-pulse' : 'bg-blue-600 text-white'}`}>
+                          <AlertCircle size={40} />
+                        </div>
+                        <div>
+                          <h4 className="text-3xl font-black uppercase italic group-hover:text-blue-400 transition-colors tracking-tighter leading-none mb-4">{t.title}</h4>
+                          <div className="flex items-center gap-6">
+                            <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em]">{t.customerName}</span>
+                            <span className="h-1.5 w-1.5 bg-slate-800 rounded-full" />
+                            <span className="text-[11px] font-black text-blue-500 uppercase tracking-[0.3em]">{t.source}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-10 relative z-10">
+                        <div className="text-right">
+                          <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest mb-1 italic tracking-[0.2em]">STATUS ATUAL</p>
+                          <p className={`text-xl font-black italic ${t.status === 'open' ? 'text-blue-500' : 'text-emerald-500'}`}>{t.status.toUpperCase().replace('_', ' ')}</p>
+                        </div>
+                        <button className="bg-white text-slate-900 px-12 py-7 rounded-[28px] font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all shadow-2xl active:scale-95">
+                          Gerenciar
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="py-60 text-center bg-white/[0.01] rounded-[80px] border-4 border-dashed border-white/5 flex flex-col items-center">
+                    <div className="p-8 bg-white/5 rounded-full mb-8 text-slate-800"><Zap size={80} /></div>
+                    <p className="text-slate-700 font-black text-4xl uppercase italic tracking-tighter">Nenhum alerta em processamento no momento</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence>
           {selectedTicket && (
             <TicketDetailSidebar 
