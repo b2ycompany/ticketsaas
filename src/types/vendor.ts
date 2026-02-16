@@ -1,9 +1,13 @@
 import { Timestamp } from "firebase/firestore";
 
+/**
+ * VENDOR GOVERNANCE INTERFACE - B2Y MASTER
+ * Define o contrato de performance e matriz de SLA para parceiros.
+ */
 export interface VendorSLA {
   priority: 'low' | 'medium' | 'high' | 'critical';
-  responseTime: number; // em minutos
-  resolutionTime: number; // em minutos
+  responseTime: number;
+  resolutionTime: number;
 }
 
 export interface Vendor {
@@ -12,7 +16,10 @@ export interface Vendor {
   category: 'cloud' | 'software' | 'hardware' | 'network';
   contactEmail: string;
   active: boolean;
+  // Campo exigido pelo Analytics
+  defaultSla: string; 
   slas: VendorSLA[];
-  customColumns: string[]; // Filas específicas deste fornecedor
+  customColumns: string[];
   createdAt: Timestamp | Date;
+  updatedAt?: Timestamp | Date;
 }
